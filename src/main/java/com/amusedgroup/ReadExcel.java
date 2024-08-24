@@ -48,7 +48,7 @@ public class ReadExcel implements ExcelUtil {
         try {
             ReadExcel readExcel = new ReadExcel();
             File tempExcelFile = readExcel.loadExcel(filePath);
-           // ExcelDuplicatesFinder.findDuplicatesInColumns(tempExcelFile.getPath());
+
         } catch (IOException e) {
             e.printStackTrace();
         }
