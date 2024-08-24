@@ -1,0 +1,16 @@
+For a change in code, Run below commands to package.
+=================
+mvn clean package
+================
+
+
+Optional: to rebuild the full source
+=======================================
+jar cfm ExcelDuplicatesFinder.jar ..\..\..\..\..\META-INF\MANIFEST.MF -C ..\..\..\..\..\target\classes\  .
+java -jar target/clean-excel-1.0-SNAPSHOT-shaded.jar
+=============================================================
+
+HOW TO RUN:
+=============
+1. Copy the Original Mapping File into "Mapping" Folder
+2. Double Click on the "clean-excel.bat" file in the Root Directory.
