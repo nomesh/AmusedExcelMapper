@@ -92,12 +92,12 @@ public class ExcelPlayerNameNormalizer {
                 .replaceAll("á", "a");
     }
 
-    public static void main(String[] args) {
-        try {
-            String filePath = "D:\\microservices\\Football Roster 24-25.xlsx";
-            ExcelPlayerNameNormalizer.normalizePlayerNames(filePath, "D:\\microservices\\clean-excel\\Mapping\\players_normalized.xlsx");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args) {
+//        try {
+//            String filePath = "D:\\microservices\\Football Roster 24-25.xlsx";
+//            ExcelPlayerNameNormalizer.normalizePlayerNames(filePath, "D:\\microservices\\clean-excel\\Mapping\\players_normalized.xlsx");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

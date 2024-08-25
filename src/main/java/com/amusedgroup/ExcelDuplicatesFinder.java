@@ -11,7 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ExcelDuplicatesFinder {
-    static String orig_inputFilePath = "Mapping\\Football Roster 24-25.xlsx";
 
     // Define the index of the Player Name column and other columns
     private static final int PLAYER_NAME_COLUMN_INDEX = 1; // Player Name column index (0-based)
@@ -148,27 +147,27 @@ public class ExcelDuplicatesFinder {
     // Copy only selected columns (Player Name, Team Name, Competition) from header
 
 
-    public static void main(String[] args){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        String dateTime = sdf.format(new Date());
-
-        try (PrintWriter out = new PrintWriter(new FileWriter("log.txt"))) {
-            out.println("Application started");
-            // Get the current directory and construct file paths
-            File currentDirectory = new File(".");
-            String inputFilePath = new File(currentDirectory, "Mapping/Football Roster 24-25.xlsx").getAbsolutePath();
-            String outputFilePath = new File(currentDirectory, "Mapping/found-duplicates-" + dateTime + ".xlsx").getAbsolutePath();
-
-            //-------------------------------------------------------------------------------------------------
-
-               // ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
-                findAndProcessDuplicates(inputFilePath, outputFilePath); /* Identify Duplicates - Highlights */
-
-            //-------------------------------------------------------------------------------------------------
-            out.println("Processing complete. Output file: " + outputFilePath);
-            System.out.println("Processing complete. Output file: " + outputFilePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public static void main(String[] args){
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+//        String dateTime = sdf.format(new Date());
+//
+//        try (PrintWriter out = new PrintWriter(new FileWriter("log.txt"))) {
+//            out.println("Application started");
+//            // Get the current directory and construct file paths
+//            File currentDirectory = new File(".");
+//            String inputFilePath = new File(currentDirectory, "Mapping/Football Roster 24-25.xlsx").getAbsolutePath();
+//            String outputFilePath = new File(currentDirectory, "Mapping/found-duplicates-" + dateTime + ".xlsx").getAbsolutePath();
+//
+//            //-------------------------------------------------------------------------------------------------
+//
+//               // ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
+//                findAndProcessDuplicates(inputFilePath, outputFilePath); /* Identify Duplicates - Highlights */
+//
+//            //-------------------------------------------------------------------------------------------------
+//            out.println("Processing complete. Output file: " + outputFilePath);
+//            System.out.println("Processing complete. Output file: " + outputFilePath);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
