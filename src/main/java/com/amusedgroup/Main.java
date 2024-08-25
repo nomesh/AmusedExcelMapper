@@ -13,26 +13,30 @@ public class Main {
         String dateTime = sdf.format(new Date());
 
         try (PrintWriter out = new PrintWriter(new FileWriter("log.txt"))) {
-            out.println("Application started");
+            System.out.println("Application started");
             // Get the current directory and construct file paths
             File currentDirectory = new File(".");
-            String inputFilePath = new File(currentDirectory, "Mapping/Football Roster 24-25.xlsx").getAbsolutePath();
+            String inputFilePath = new File(currentDirectory, "Mapping/Roster_Mapping.xlsx").getAbsolutePath();
             String outputFilePath = new File(currentDirectory, "Mapping/player-normalized-" + dateTime + ".xlsx").getAbsolutePath();
-            String outputFilePath2 = new File(currentDirectory, "Mapping/found-duplicates-" + dateTime + ".xlsx").getAbsolutePath();
+            String outputFilePath2 = new File(currentDirectory, "Mapping/final-with-identified-duplicates-" + dateTime + ".xlsx").getAbsolutePath();
             //-------------------------------------------------------------------------------------------------
-            out.println("===================================================================");
-            out.println("Finding Special Characters of the Player Names and Replacing......");
-            out.println("===================================================================");
+            System.out.println("===================================================================");
+            System.out.println("Finding Special Characters of the Player Names and Replacing......");
+            System.out.println("===================================================================");
             ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
 
-            out.println("===================================================================");
-            out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
-            out.println("picking input file in: "+ outputFilePath);
-            out.println("===================================================================");
-            ExcelDuplicatesFinder.findAndProcessDuplicates(outputFilePath, outputFilePath2); /* Identify Duplicates - Highlights */
-            out.println("Duplicates finding is Completed......");
+//            Thread.sleep(2000);
 
-            out.println("Processing complete. Output file: " + outputFilePath);
+            System.out.println("===================================================================");
+            System.out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
+            System.out.println("picking input file in: "+ outputFilePath);
+            System.out.println("===================================================================");
+
+            ExcelDuplicatesFinder.findAndProcessDuplicates(outputFilePath, outputFilePath2); /* Identify Duplicates - Highlights */
+
+            System.out.println("Duplicates finding is Completed......");
+
+            System.out.println("Processing complete. Output file: " + outputFilePath);
         } catch (IOException e) {
             e.printStackTrace();
         }

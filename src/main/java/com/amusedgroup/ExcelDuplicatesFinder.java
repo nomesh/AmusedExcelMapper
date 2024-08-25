@@ -1,15 +1,17 @@
 package com.amusedgroup;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.awt.Color;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ExcelDuplicatesFinder {
-    static String orig_inputFilePath = ".\\Mapping\\Football Roster 24-25.xlsx";
-    static String outputFilePath = ".\\Mapping\\cleaned"+new Date().getTime()+".xlsx";
+    static String orig_inputFilePath = "Mapping\\Football Roster 24-25.xlsx";
 
     // Define the index of the Player Name column and other columns
     private static final int PLAYER_NAME_COLUMN_INDEX = 1; // Player Name column index (0-based)
@@ -17,33 +19,63 @@ public class ExcelDuplicatesFinder {
     private static final int COMPETITION_COLUMN_INDEX = 4; // Competition column index (0-based)
 
     public static void findAndProcessDuplicates(String inputFilePath, String outputFilePath) throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream(orig_inputFilePath);
+
+
+        try (FileInputStream fileInputStream = new FileInputStream(inputFilePath);
              Workbook workbook = new XSSFWorkbook(fileInputStream);
              Workbook newWorkbook = new XSSFWorkbook()) {
 
-            // Create a cell style with an orange background
+            // Create a cell style with an orange background for duplicates
             CellStyle orangeStyle = newWorkbook.createCellStyle();
             orangeStyle.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
             orangeStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
+            // Create a cell style for header with light blue background
+            CellStyle headerStyle = newWorkbook.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            // Create a general cell style for all cells with the font configuration
+            CellStyle generalStyle = newWorkbook.createCellStyle();
+
+            // Create and configure the font
+            Font commonFont = newWorkbook.createFont();
+            commonFont.setFontName("Aptos Narrow");
+            commonFont.setFontHeightInPoints((short) 12);
+            generalStyle.setFont(commonFont);
+
+            // Apply the font to the header style as well
+            headerStyle.setFont(commonFont);
+
+            // Create a light green color for the tab
+            XSSFColor lightGreenColor = new XSSFColor(new Color(144, 238, 144), null);
+
             // Iterate through each sheet in the input workbook
             for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
-                Sheet newSheet = newWorkbook.createSheet(sheet.getSheetName()); // Create a new sheet in the new workbook
+                XSSFSheet newSheet = (XSSFSheet) newWorkbook.createSheet(sheet.getSheetName()); // Create a new sheet in the new workbook
 
                 System.out.println("\n\n\nProcessing sheet: " + sheet.getSheetName());
+                System.out.println("==================================================");
 
-                System.out.println("\n\n\n===================================================================");
-                System.out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
-                System.out.println("===================================================================");
+                // Highlight the tab name
+                newSheet.setTabColor(lightGreenColor);
+
                 // Map to store seen player names with their row numbers
                 Map<String, Integer> seenPlayerNames = new HashMap<>();
 
-                // Copy headers for relevant columns only
+                // Copy headers for relevant columns only and apply header style
                 Row headerRow = sheet.getRow(0);
                 if (headerRow != null) {
                     Row newHeaderRow = newSheet.createRow(0);
-                    copySelectedColumns(headerRow, newHeaderRow);
+                    ExcelDecorator.copySelectedColumns(headerRow, newHeaderRow);
+                    // Apply header style to the new header row
+                    for (int i = 0; i < newHeaderRow.getLastCellNum(); i++) {
+                        Cell headerCell = newHeaderRow.getCell(i);
+                        if (headerCell != null) {
+                            headerCell.setCellStyle(headerStyle);
+                        }
+                    }
                 }
 
                 // Iterate through each row in the sheet
@@ -73,7 +105,7 @@ public class ExcelDuplicatesFinder {
 
                                     // Prepend the team name to the player name
                                     String newPlayerName = playerName + " - " + teamName;
-                                    System.out.println("duplicate found: "+playerName + " - " + teamName);
+                                    System.out.println("Duplicate found: " + playerName + " - " + teamName);
                                     // Set the modified value in the new sheet and apply orange style
                                     newPlayerNameCell.setCellValue(newPlayerName);
                                     newPlayerNameCell.setCellStyle(orangeStyle);
@@ -101,6 +133,9 @@ public class ExcelDuplicatesFinder {
                         }
                     }
                 }
+
+                // Remove empty columns after processing
+                ExcelDecorator.removeEmptyColumns(newSheet);
             }
 
             // Write the new workbook to the output file
@@ -110,87 +145,8 @@ public class ExcelDuplicatesFinder {
         }
     }
 
-    // Method to copy only selected columns from one row to another
-    private static void copySelectedColumns(Row sourceRow, Row targetRow) {
-        for (int colIndex = 0; colIndex <= COMPETITION_COLUMN_INDEX; colIndex++) {
-            Cell sourceCell = sourceRow.getCell(colIndex);
-            Cell targetCell = targetRow.createCell(colIndex);
-            if (sourceCell != null) {
-                switch (sourceCell.getCellType()) {
-                    case STRING:
-                        targetCell.setCellValue(sourceCell.getStringCellValue());
-                        break;
-                    case NUMERIC:
-                        targetCell.setCellValue(sourceCell.getNumericCellValue());
-                        break;
-                    case BOOLEAN:
-                        targetCell.setCellValue(sourceCell.getBooleanCellValue());
-                        break;
-                    case FORMULA:
-                        targetCell.setCellFormula(sourceCell.getCellFormula());
-                        break;
-                    case BLANK:
-                        targetCell.setBlank();
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
+    // Copy only selected columns (Player Name, Team Name, Competition) from header
 
-    public static void findDuplicatesInColumns(String inputFilePath, String outputFilePath) throws IOException {
-        // Open the input Excel file
-        FileInputStream fis = new FileInputStream(inputFilePath);
-        Workbook workbook = new XSSFWorkbook(fis);
-        Sheet sheet = workbook.getSheetAt(0);
-
-        // Track seen player names
-        Set<String> seenNames = new HashSet<>();
-
-        System.out.println("\n\n\nProcessing sheet: " + sheet.getSheetName());
-
-        System.out.println("\n\n\n===================================================================");
-        System.out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
-        System.out.println("===================================================================");
-
-        // Iterate through the rows in the sheet
-        for (Row row : sheet) {
-            if (row.getRowNum() == 0) continue; // Skip header row
-
-            Cell playerNameCell = row.getCell(0); // Player Name
-            Cell teamNameCell = row.getCell(1); // Team Name
-            Cell competitionCell = row.getCell(2); // Competition
-
-            if (playerNameCell != null && playerNameCell.getCellType() == CellType.STRING) {
-                String playerName = playerNameCell.getStringCellValue();
-
-                // Check if the player name has been seen before
-                if (!seenNames.add(playerName)) {
-                    // Duplicate found, update the player name with team name
-                    String newPlayerName = playerName + " - " + teamNameCell.getStringCellValue();
-                    playerNameCell.setCellValue(newPlayerName);
-
-                    // Highlight the duplicate cell
-                    CellStyle style = workbook.createCellStyle();
-                    style.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
-                    style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-                    playerNameCell.setCellStyle(style);
-                }
-            }
-        }
-
-        // Close the input file stream
-        fis.close();
-
-        // Write the modified content to a new Excel file
-        FileOutputStream fos = new FileOutputStream(outputFilePath);
-        workbook.write(fos);
-
-        // Close the output file stream and the workbook
-        fos.close();
-        workbook.close();
-    }
 
     public static void main(String[] args){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
@@ -205,9 +161,9 @@ public class ExcelDuplicatesFinder {
 
             //-------------------------------------------------------------------------------------------------
 
-                ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
-                //findAndProcessDuplicates(inputFilePath, outputFilePath); /* Identify Duplicates - Highlights */
-                findDuplicatesInColumns(inputFilePath, outputFilePath);
+               // ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
+                findAndProcessDuplicates(inputFilePath, outputFilePath); /* Identify Duplicates - Highlights */
+
             //-------------------------------------------------------------------------------------------------
             out.println("Processing complete. Output file: " + outputFilePath);
             System.out.println("Processing complete. Output file: " + outputFilePath);

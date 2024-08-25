@@ -1,2 +1,0 @@
-Application started
-Processing complete. Output file: D:\microservices\clean-excel\.\Mapping\found-duplicates-20240825_124352.xlsx
