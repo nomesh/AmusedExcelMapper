@@ -72,6 +72,7 @@ public class ExcelPlayerNameNormalizer {
         return Normalizer.normalize(playerName, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
                 .replaceAll("ø", "o")
+                .replaceAll("ó","o")
                 .replaceAll("æ", "ae")
                 .replaceAll("œ", "oe")
                 .replaceAll("ß", "ss")
