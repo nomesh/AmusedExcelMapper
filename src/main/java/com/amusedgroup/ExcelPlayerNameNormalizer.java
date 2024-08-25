@@ -2,98 +2,99 @@ package com.amusedgroup;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class ExcelPlayerNameNormalizer {
 
     public static void normalizePlayerNames(String inputFilePath, String outputFilePath) throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream(inputFilePath);
-             Workbook workbook = new XSSFWorkbook(fileInputStream);
-             Workbook newWorkbook = new XSSFWorkbook()) {
+        // Open the input Excel file
+        FileInputStream fis = new FileInputStream(inputFilePath);
+        Workbook workbook = new XSSFWorkbook(fis);
 
-            // Iterate through each sheet in the input workbook
-            for (int sheetIndex = 0; sheetIndex < workbook.getNumberOfSheets(); sheetIndex++) {
-                Sheet sheet = workbook.getSheetAt(sheetIndex);
-                Sheet newSheet = newWorkbook.createSheet(sheet.getSheetName()); // Create a new sheet in the new workbook
+        // Iterate over all sheets in the workbook
+        for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+            Sheet sheet = workbook.getSheetAt(i);
+            System.out.println("=================");
+            System.out.println("Tab: " + sheet.getSheetName());
+            System.out.println();
 
-                // Iterate through each row in the sheet
-                for (int rowIndex = 0; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-                    Row row = sheet.getRow(rowIndex);
-                    Row newRow = newSheet.createRow(rowIndex); // Create a new row in the new sheet
+            boolean foundSpecialCharacters = false;
 
-                    if (row != null) {
-                        // Iterate through each cell in the row
-                        for (int colIndex = 0; colIndex < row.getLastCellNum(); colIndex++) {
-                            Cell cell = row.getCell(colIndex);
-                            Cell newCell = newRow.createCell(colIndex); // Create a new cell in the new row
+            for (Row row : sheet) {
+                for (Cell cell : row) {
+                    if (cell.getCellType() == CellType.STRING) {
+                        String originalValue = cell.getStringCellValue();
+                        String normalizedValue = normalizePlayerName(originalValue);
 
-                            if (cell != null && cell.getCellType() == CellType.STRING) {
-                                String cellValue = cell.getStringCellValue();
-                                String normalizedValue = normalizeString(cellValue);
-
-                                // Check if the value has changed
-                                if (!cellValue.equals(normalizedValue)) {
-                                    System.out.println("Special characters found in Sheet: " + sheet.getSheetName() +
-                                            ", Row: " + (rowIndex + 1) + ", Column: " + (colIndex + 1));
-                                    System.out.println("Original: " + cellValue);
-                                    System.out.println("Replaced: " + normalizedValue);
-                                }
-
-                                newCell.setCellValue(normalizedValue); // Set the normalized value in the new cell
-                            } else if (cell != null) {
-                                // Copy other cell types without modification
-                                copyCell(cell, newCell);
+                        if (!originalValue.equals(normalizedValue)) {
+                            if (!foundSpecialCharacters) {
+                                System.out.println("Special characters found in sheet:");
+                                foundSpecialCharacters = true;
                             }
+                            System.out.printf("  Row %d, Column %d: '%s' -> '%s'%n",
+                                    row.getRowNum() + 1, cell.getColumnIndex() + 1, originalValue, normalizedValue);
+                            cell.setCellValue(normalizedValue);
                         }
                     }
                 }
             }
 
-            // Write the new workbook to the output file
-            try (FileOutputStream fileOutputStream = new FileOutputStream(outputFilePath)) {
-                newWorkbook.write(fileOutputStream);
+            if (!foundSpecialCharacters) {
+                System.out.println("No special characters found in sheet.");
             }
+
+            System.out.println(); // Add an empty line for readability between sheets
         }
+
+        // Close the input file stream
+        fis.close();
+
+        // Write the normalized content to a new Excel file
+        FileOutputStream fos = new FileOutputStream(outputFilePath);
+        workbook.write(fos);
+
+        System.out.println("Output File location: " + outputFilePath);
+
+        // Close the output file stream and the workbook
+        fos.close();
+        workbook.close();
     }
 
-    // Method to normalize a string by removing accents and special characters
-    private static String normalizeString(String input) {
-        String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
-        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-        return pattern.matcher(normalized).replaceAll("").replaceAll("[^\\p{ASCII}]", "");
-    }
-
-    // Method to copy the content of one cell to another
-    private static void copyCell(Cell source, Cell target) {
-        switch (source.getCellType()) {
-            case STRING:
-                target.setCellValue(source.getStringCellValue());
-                break;
-            case NUMERIC:
-                target.setCellValue(source.getNumericCellValue());
-                break;
-            case BOOLEAN:
-                target.setCellValue(source.getBooleanCellValue());
-                break;
-            case FORMULA:
-                target.setCellFormula(source.getCellFormula());
-                break;
-            case BLANK:
-                target.setBlank();
-                break;
-            default:
-                break;
-        }
+    public static String normalizePlayerName(String playerName) {
+        // Normalize the string to remove diacritical marks (accents)
+        return Normalizer.normalize(playerName, Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("ø", "o")
+                .replaceAll("æ", "ae")
+                .replaceAll("œ", "oe")
+                .replaceAll("ß", "ss")
+                .replaceAll("ð", "d")
+                .replaceAll("þ", "th")
+                .replaceAll("ł", "l")
+                .replaceAll("đ", "d")
+                .replaceAll("ŋ", "ng")
+                .replaceAll("ħ", "h")
+                .replaceAll("ı", "i")
+                .replaceAll("ĳ", "ij")
+                .replaceAll("ſ", "s")
+                .replaceAll("ø", "o")
+                .replaceAll("ė", "e")
+                .replaceAll("é", "e")
+                .replaceAll("ã", "a")
+                .replaceAll("á", "a");
     }
 
     public static void main(String[] args) {
         try {
             String filePath = "D:\\microservices\\Football Roster 24-25.xlsx";
-            normalizePlayerNames(filePath, "D:\\microservices\\players_normalized.xlsx");
+            ExcelPlayerNameNormalizer.normalizePlayerNames(filePath, "D:\\microservices\\clean-excel\\Mapping\\players_normalized.xlsx");
         } catch (IOException e) {
             e.printStackTrace();
         }

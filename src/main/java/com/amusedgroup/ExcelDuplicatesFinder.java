@@ -31,8 +31,11 @@ public class ExcelDuplicatesFinder {
                 Sheet sheet = workbook.getSheetAt(sheetIndex);
                 Sheet newSheet = newWorkbook.createSheet(sheet.getSheetName()); // Create a new sheet in the new workbook
 
-                System.out.println("Processing sheet: " + sheet.getSheetName());
+                System.out.println("\n\n\nProcessing sheet: " + sheet.getSheetName());
 
+                System.out.println("\n\n\n===================================================================");
+                System.out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
+                System.out.println("===================================================================");
                 // Map to store seen player names with their row numbers
                 Map<String, Integer> seenPlayerNames = new HashMap<>();
 
@@ -136,6 +139,58 @@ public class ExcelDuplicatesFinder {
         }
     }
 
+    public static void findDuplicatesInColumns(String inputFilePath, String outputFilePath) throws IOException {
+        // Open the input Excel file
+        FileInputStream fis = new FileInputStream(inputFilePath);
+        Workbook workbook = new XSSFWorkbook(fis);
+        Sheet sheet = workbook.getSheetAt(0);
+
+        // Track seen player names
+        Set<String> seenNames = new HashSet<>();
+
+        System.out.println("\n\n\nProcessing sheet: " + sheet.getSheetName());
+
+        System.out.println("\n\n\n===================================================================");
+        System.out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
+        System.out.println("===================================================================");
+
+        // Iterate through the rows in the sheet
+        for (Row row : sheet) {
+            if (row.getRowNum() == 0) continue; // Skip header row
+
+            Cell playerNameCell = row.getCell(0); // Player Name
+            Cell teamNameCell = row.getCell(1); // Team Name
+            Cell competitionCell = row.getCell(2); // Competition
+
+            if (playerNameCell != null && playerNameCell.getCellType() == CellType.STRING) {
+                String playerName = playerNameCell.getStringCellValue();
+
+                // Check if the player name has been seen before
+                if (!seenNames.add(playerName)) {
+                    // Duplicate found, update the player name with team name
+                    String newPlayerName = playerName + " - " + teamNameCell.getStringCellValue();
+                    playerNameCell.setCellValue(newPlayerName);
+
+                    // Highlight the duplicate cell
+                    CellStyle style = workbook.createCellStyle();
+                    style.setFillForegroundColor(IndexedColors.ORANGE.getIndex());
+                    style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                    playerNameCell.setCellStyle(style);
+                }
+            }
+        }
+
+        // Close the input file stream
+        fis.close();
+
+        // Write the modified content to a new Excel file
+        FileOutputStream fos = new FileOutputStream(outputFilePath);
+        workbook.write(fos);
+
+        // Close the output file stream and the workbook
+        fos.close();
+        workbook.close();
+    }
 
     public static void main(String[] args){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
@@ -148,7 +203,12 @@ public class ExcelDuplicatesFinder {
             String inputFilePath = new File(currentDirectory, "Mapping/Football Roster 24-25.xlsx").getAbsolutePath();
             String outputFilePath = new File(currentDirectory, "Mapping/found-duplicates-" + dateTime + ".xlsx").getAbsolutePath();
 
-            findAndProcessDuplicates(inputFilePath, outputFilePath);
+            //-------------------------------------------------------------------------------------------------
+
+                ExcelPlayerNameNormalizer.normalizePlayerNames(inputFilePath, outputFilePath);  /* Identify & Replace Special Chars */
+                //findAndProcessDuplicates(inputFilePath, outputFilePath); /* Identify Duplicates - Highlights */
+                findDuplicatesInColumns(inputFilePath, outputFilePath);
+            //-------------------------------------------------------------------------------------------------
             out.println("Processing complete. Output file: " + outputFilePath);
             System.out.println("Processing complete. Output file: " + outputFilePath);
         } catch (IOException e) {

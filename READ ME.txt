@@ -6,8 +6,8 @@ mvn clean package
 
 Optional: to rebuild the full source
 =======================================
-jar cfm ExcelDuplicatesFinder.jar ..\..\..\..\..\META-INF\MANIFEST.MF -C ..\..\..\..\..\target\classes\  .
-java -jar target/clean-excel-1.0-SNAPSHOT-shaded.jar
+root$>  jar cfm clean-excel-1.0-SNAPSHOT-shaded.jar META-INF\MANIFEST.MF -C target\classes\  .
+root$>  java -jar target/clean-excel-1.0-SNAPSHOT-shaded.jar
 =============================================================
 
 HOW TO RUN:
