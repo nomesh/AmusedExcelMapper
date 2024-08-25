@@ -27,9 +27,10 @@ public class Main {
 
             out.println("===================================================================");
             out.println("Finding Duplicate Players and Highlighting with Team Name Suffix......");
+            out.println("picking input file in: "+ outputFilePath);
             out.println("===================================================================");
             ExcelDuplicatesFinder.findAndProcessDuplicates(outputFilePath, outputFilePath2); /* Identify Duplicates - Highlights */
-
+            out.println("Duplicates finding is Completed......");
 
             out.println("Processing complete. Output file: " + outputFilePath);
         } catch (IOException e) {
