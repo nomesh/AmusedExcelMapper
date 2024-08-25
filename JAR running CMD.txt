@@ -1,0 +1,2 @@
+ jar cfm clean-excel-1.0-SNAPSHOT-shaded.jar META-INF\MANIFEST.MF -C target\classes\  .
+java -jar .\target\clean-excel-1.0-SNAPSHOT.jar
