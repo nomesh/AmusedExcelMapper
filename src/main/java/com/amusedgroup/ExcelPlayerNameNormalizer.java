@@ -71,25 +71,24 @@ public class ExcelPlayerNameNormalizer {
         // Normalize the string to remove diacritical marks (accents)
         return Normalizer.normalize(playerName, Normalizer.Form.NFD)
                 .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
-                .replaceAll("ø", "o")
-                .replaceAll("ó","o")
-                .replaceAll("æ", "ae")
-                .replaceAll("œ", "oe")
-                .replaceAll("ß", "ss")
-                .replaceAll("ð", "d")
-                .replaceAll("þ", "th")
-                .replaceAll("ł", "l")
-                .replaceAll("đ", "d")
-                .replaceAll("ŋ", "ng")
-                .replaceAll("ħ", "h")
-                .replaceAll("ı", "i")
-                .replaceAll("ĳ", "ij")
-                .replaceAll("ſ", "s")
-                .replaceAll("ø", "o")
-                .replaceAll("ė", "e")
-                .replaceAll("é", "e")
-                .replaceAll("ã", "a")
-                .replaceAll("á", "a");
+                .replaceAll("[øØ]", "o")
+                .replaceAll("[óÓ]", "o")
+                .replaceAll("[æÆ]", "ae")
+                .replaceAll("[œŒ]", "oe")
+                .replaceAll("[ß]", "ss")  // ß has no direct uppercase equivalent
+                .replaceAll("[ðÐ]", "d")
+                .replaceAll("[þÞ]", "th")
+                .replaceAll("[łŁ]", "l")
+                .replaceAll("[đĐ]", "d")
+                .replaceAll("[ŋŊ]", "ng")
+                .replaceAll("[ħĦ]", "h")
+                .replaceAll("[ıI]", "i")  // ı and I map to lowercase 'i'
+                .replaceAll("[ĳĲ]", "ij")
+                .replaceAll("[ſ]", "s")   // ſ has no direct uppercase equivalent
+                .replaceAll("[ėĖ]", "e")
+                .replaceAll("[éÉ]", "e")
+                .replaceAll("[ãÃ]", "a")
+                .replaceAll("[áÁ]", "a");
     }
 
 //    public static void main(String[] args) {
